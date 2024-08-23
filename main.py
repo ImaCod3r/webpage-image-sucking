@@ -1,13 +1,16 @@
-from bs4 import BeautifulSoup
-import requests
-import validators
-import sys
+import argparse
 import os
+from bs4 import BeautifulSoup
+import validators
+import requests
 
-url = sys.argv[1]
-
-DOWNLOAD_FOLDER = os.path.join(ps.getcwd(), 'Downloads')
 os.makedirs(DOWNLOAD_FOLDER, exist_ok = True)
+
+def parse_args():
+    parser = argparse.ArgumentParser(description="Download images from a webpage")
+    parser.add_argument("url", help="Webpage URL")
+    parser.add_argument("-d", "--directory", default="Downloads", help="Directory to save images")
+    return parser.parse_args()
 
 def validate_url(url):
     if not validators.url(url):
@@ -31,17 +34,11 @@ def getSoup(url):
                 return BeautifulSoup(response.text, 'html.parser')
 
 def getImages(soup):
-    try:
-        img_tags = soup.find_all('img')
-    except Exception as e:
-        print(e)
-    else:
-        for img in img_tags:
-            yield img.get('src')
+    return [img.get('src') for img in soup.find_all('img')
 
-def downloadImage(image_url, index):
+def downloadImage(image_url, index, directory, base_url):
     if not image_url.startswith(('http://', 'https://')):
-        image_url = requests.compat.urljoin(url, image_url)
+        image_url = requests.compat.urljoin(base_url, image_url)
 
     img_response = requests.get(image_url)
     
@@ -50,7 +47,7 @@ def downloadImage(image_url, index):
         if not extension:
         extension = '.jpg' # If there is no extension, assume it as JPG
         img_name = f'image-{index}{extension}'
-        img_path = os.path.join(DOWMLOAD_FOLDER, img_name)
+        img_path = os.path.join(directory, img_name)
         
         with open(img_path, 'wb') as file:
             file.write(img_response.content)
@@ -58,15 +55,15 @@ def downloadImage(image_url, index):
     else:
         print(f'{image_url} cant be downloaded')
 
-if __name__ == '__main__':
-    soup = getSoup(url)
+def main():
+    args = parse_args()
+    soup = getSoup(args.url)
     if soup:
         index = 0
         for image in getImages(soup):
-            index += 1
-            downloadImage(image, index)
+            index =+ 1
+            downloadImage(image, args.directory, index)
 
 
-
-            
-
+if __name__ == '__main__':
+    main()
