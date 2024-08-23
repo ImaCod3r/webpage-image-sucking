@@ -54,7 +54,7 @@ This will download all images from https://example.com and save them to the my_i
 ```
 
 
-## Licença
+## License
 
 This project is licensed under the MIT License.
 [MIT](https://choosealicense.com/licenses/mit/)
