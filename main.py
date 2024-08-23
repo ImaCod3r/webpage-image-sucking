@@ -1,21 +1,27 @@
 from bs4 import BeautifulSoup
 import requests
+import validators
 import sys
 import os
 
 url = sys.argv[1]
-os.makedirs('Downloads', exist_ok = True)
+
+DOWNLOAD_FOLDER = os.path.join(ps.getcwd(), 'Downloads')
+os.makedirs(DOWNLOAD_FOLDER, exist_ok = True)
 
 def getSoup(url):
     try:
-        response = requests.get(url)
-    except Exception as e:
-        print(e)
+        response = requests.get(url, timeout=10)
+        response.raise_for_status() # raise exception for http error code
+    except requests.exceptions.Timeout:
+        print('The request timed out')
+        return False
+    except requets.exceptions.RequestException as e:
+        print(f'An error occured: {e}')
+        return False
     else:
         if response.status_code == 200:
             return BeautifulSoup(response.text, 'html.parser')
-        print(f'This url cant be reached. Status code: {response.status_code}')
-    return False
 
 def getImages(soup):
     try:
